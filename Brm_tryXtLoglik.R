@@ -34,11 +34,11 @@ Wt <- (Xt%*%bs2)/length(a)
 # df_sample$MnMVPA <-  df_sample$MnMVPA/100
 
 
-df_sampleWt <- data.frame(df_sample, W = Wt)[1:200,]
+df_sampleWt <- data.frame(df_sample, W = Wt) #[1:200,]
 
 
 
-#********************************************************************************
+#*******************************************************************************
 # trial code (Cases we need to look at)
 # 
 #-------------------------------------------------------------------------------
@@ -65,7 +65,7 @@ fitCase3  <- list()
 fitCase4  <- list()
 fitCase5  <- list()
 tauVal <- c(.1,.5,.9)
-Niter = 100
+Niter = 5000
 Nchain = 2
 
 
@@ -92,7 +92,7 @@ for(l in 1:length(tauVal)){
   #-------------------------------------------------------------------------------
   #@' This function is the stan_funs2 for the GAL distribution
   
-  Bd = GamBnd(tau0)[1:2]
+  Bd = GamBnd(tau0)[1:2] 
   
   {
     GAL2 <- custom_family(
@@ -606,7 +606,7 @@ for(l in 1:length(tauVal)){
         // actual population-level intercept
         real b_Intercept = Intercept - dot_product(means_X, b);
         vector[N] mu = rep_vector(0.0, N);
-        vector[N] log_lik;
+        vector[N] log_lik = rep_vector(0.0, N);
           mu += Intercept + Xc * b + Wn * bwa;
         for(n in 1:N)
               log_lik[n] +=  GAL2_lpdf(Y[n] | mu[n], sigma, gam, tau0);
@@ -865,7 +865,7 @@ for(l in 1:length(tauVal)){
         // actual population-level intercept
         real b_Intercept = Intercept - dot_product(means_X, b);
         vector[N] mu = rep_vector(0.0, N);
-        vector[N] log_lik;
+        vector[N] log_lik = rep_vector(0.0, N);
         vector[Kep] lps0 = log(pis);
         vector[Kep] lps1 = log(pis);
           mu += Intercept + Xc * b + Wn * bwa;
@@ -875,7 +875,7 @@ for(l in 1:length(tauVal)){
             for(l in 1:Kep)
               lps1[l] +=  GAL2_lpdf(Y[n] | mu[n], sigma[l], gam[l], tau0);
               
-          log_lik[n] = log_sum_exp(lps1);
+          log_lik[n] += log_sum_exp(lps1);
           }
         //Vector[N] ASTP = Xs[1:N,1] * bs[1] + Zs_1_1 * s_1_1;
         //vector[N] MVPA = Xs[1:N,2] * bs[2] + Zs_2_1 * s_2_1;
@@ -903,6 +903,11 @@ for(l in 1:length(tauVal)){
   fitCase2b[[l]] <- stan(model_code = StandCodeVGalLin,
                          data = Dt2b, iter = Niter, chains = Nchain, verbose = TRUE,control = list(adapt_delta = 0.99,max_treedepth=11), cores = 2, seed = 1123)
   
+  # loo1 <- loo(fit1, save_psis = TRUE)
+  # LogLik2b <- extract_log_lik(fitCase2b[[1]], parameter_name = "log_lik")  
+  # loo::waic(LogLik2b) 
+  # LooVal2b <- loo::loo(LogLik2b, save_psis = TRUE)
+  
   #-------------------------------------------------------------------------------
   # Case 3
   #-------------------------------------------------------------------------------
@@ -919,8 +924,20 @@ for(l in 1:length(tauVal)){
                              stanvars = stanvars2,chains = Nchain,iter = Niter, control = list(adapt_delta = 0.99),  cores = 2, seed = 1123) # init = 0.1,
   
   
-  
-  
+  # expose_functions(fitCase3[[l]], vectorize = TRUE)
+  # log_lik_GAL2 <- function(i, prep) {
+  #      mu <- brms::get_dpar(prep, "mu", i = i)
+  #   sigma <- brms::get_dpar(prep, "sigma", i = i)
+  #     gam <- brms::get_dpar(prep, "gam", i = i)
+  #     tau <- brms::get_dpar(prep, "tau", i = i)
+  #   #tau <- prep$data$tau[i]
+  #   y <- prep$data$Y[i]
+  #   GAL2_lpdf(y, mu, sigma, gam, tau)
+  # }
+  # 
+  # LooVal3 <- loo(fitCase3[[1]])
+  # 
+  # loo(fitCase3[[1]], LogLik2b)
   #-------------------------------------------------------------------------------
   # Case 4
   #-------------------------------------------------------------------------------
@@ -1201,7 +1218,7 @@ for(l in 1:length(tauVal)){
     // actual population-level intercept
     real b_Intercept = Intercept - dot_product(means_X, b);
     vector[N] mu = rep_vector(0.0, N);
-    vector[N] log_lik;
+    vector[N] log_lik = rep_vector(0.0, N);
           mu += Intercept + Xc * b + Wn * bwa;
         for(n in 1:N)
               log_lik[n] +=  GAL2_lpdf(Y[n] | mu[n], sigma, gam, tau0);
@@ -1497,7 +1514,7 @@ for(l in 1:length(tauVal)){
       // actual population-level intercept
       real b_Intercept = Intercept - dot_product(means_X, b);
       vector[N] mu = rep_vector(0.0, N);
-      vector[N] log_lik;
+      vector[N] log_lik = rep_vector(0.0, N);
           mu += Intercept + Xc * b + Wn * bwa;
         for(n in 1:N)
               log_lik[n] +=  GAL2_lpdf(Y[n] | mu[n], sigma, gam, tau0);
@@ -1515,4 +1532,6 @@ for(l in 1:length(tauVal)){
   
   
   
+  
 }
+
