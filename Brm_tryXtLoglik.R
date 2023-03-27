@@ -391,7 +391,7 @@ for(l in 1:length(tauVal)){
   
   
   #-------------------------------------------------------------------------------
-  # Case 2
+  # Case 2 - Without MVPA and ASTP (smooth Xt)
   #-------------------------------------------------------------------------------
   {
     StandCodeVGalLin <- "
@@ -640,7 +640,7 @@ for(l in 1:length(tauVal)){
   
   
   #-------------------------------------------------------------------------------
-  # Case 2b  (with mixture distribution)
+  # Case 2b - Without MVPA and ASTP (smooth Wt)  (with mixture distribution)
   #-------------------------------------------------------------------------------
   {
     StandCodeVGalLin <- "
