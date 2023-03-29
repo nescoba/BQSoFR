@@ -352,3 +352,7 @@ LogLik2b <- extract_log_lik(fitCase2b[[l]], parameter_name = "log_lik")
 loo::waic(LogLik2b) 
 LooVal <- loo::loo(LogLik2b, save_psis = TRUE)
 print(LooVal)
+
+#-------------------------------------------------------------------------------
+#--- I save the output with loglik to compare models
+save(Brm_tryWtLoglik_results, Brm_tryXtLoglik_results,file="/Users/rszoh/Library/CloudStorage/OneDrive-IndianaUniversity/Join_folder_Annie_DrZoh/NHANES Dataset/2013-2014/FinalData021423.RData")
