@@ -125,3 +125,14 @@ GamF <- function(gam, p0){
     #+ dgamma(parm[1], shape = a.sig, scale = b.sig, log=T) + dunif(parm[2], min = Thet$gamL , max = Thet$gamU, log = T) 
     
   }
+
+  LogPlostGalLikBet <- function(parm, ei, X, tau0){
+    #@parm is a vector: parm[1]=sqrt(sigke), parm[2] = gamk
+    
+    p = (parm[2] < 0) + (tau0 - (parm[2] < 0))/(2*pnorm(-abs(parm[2]))*exp(.5*parm[2]*parm[2]))
+    ei2 <- ei - c(X%*%parm[2+c(1:ncol(X))])
+    
+    sum(log(mapply(fGal.p0, e = c(ei2), sig2 = parm[1], gam = parm[2], p = p, tau0 =tau0) + .Machine$double.eps))
+    #+ dgamma(parm[1], shape = a.sig, scale = b.sig, log=T) + dunif(parm[2], min = Thet$gamL , max = Thet$gamU, log = T) 
+    
+  }

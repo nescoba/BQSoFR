@@ -1,0 +1,162 @@
+
+SAMPLING FOR MODEL '309d234ee9c2341f198af545f2eff0c6' NOW (CHAIN 1).
+
+SAMPLING FOR MODEL '309d234ee9c2341f198af545f2eff0c6' NOW (CHAIN 2).
+
+SAMPLING FOR MODEL '309d234ee9c2341f198af545f2eff0c6' NOW (CHAIN 3).
+
+SAMPLING FOR MODEL '309d234ee9c2341f198af545f2eff0c6' NOW (CHAIN 4).
+Chain 3: 
+Chain 3: Gradient evaluation took 0.003364 seconds
+Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 33.64 seconds.
+Chain 3: Adjust your expectations accordingly!
+Chain 3: 
+Chain 3: 
+Chain 1: 
+Chain 1: Gradient evaluation took 0.003447 seconds
+Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 34.47 seconds.
+Chain 1: Adjust your expectations accordingly!
+Chain 1: 
+Chain 1: 
+Chain 2: 
+Chain 2: Gradient evaluation took 0.003166 seconds
+Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 31.66 seconds.
+Chain 2: Adjust your expectations accordingly!
+Chain 2: 
+Chain 2: 
+Chain 3: Iteration:    1 / 10000 [  0%]  (Warmup)
+Chain 1: Iteration:    1 / 10000 [  0%]  (Warmup)
+Chain 4: 
+Chain 4: Gradient evaluation took 0.003217 seconds
+Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 32.17 seconds.
+Chain 4: Adjust your expectations accordingly!
+Chain 4: 
+Chain 4: 
+Chain 2: Iteration:    1 / 10000 [  0%]  (Warmup)
+Chain 4: Iteration:    1 / 10000 [  0%]  (Warmup)
+Chain 1: Iteration: 1000 / 10000 [ 10%]  (Warmup)
+Chain 3: Iteration: 1000 / 10000 [ 10%]  (Warmup)
+Chain 4: Iteration: 1000 / 10000 [ 10%]  (Warmup)
+Chain 2: Iteration: 1000 / 10000 [ 10%]  (Warmup)
+Chain 3: Iteration: 2000 / 10000 [ 20%]  (Warmup)
+Chain 2: Iteration: 2000 / 10000 [ 20%]  (Warmup)
+Chain 4: Iteration: 2000 / 10000 [ 20%]  (Warmup)
+Chain 3: Iteration: 3000 / 10000 [ 30%]  (Warmup)
+Chain 2: Iteration: 3000 / 10000 [ 30%]  (Warmup)
+Chain 3: Iteration: 4000 / 10000 [ 40%]  (Warmup)
+Chain 2: Iteration: 4000 / 10000 [ 40%]  (Warmup)
+Chain 4: Iteration: 3000 / 10000 [ 30%]  (Warmup)
+Chain 3: Iteration: 5000 / 10000 [ 50%]  (Warmup)
+Chain 3: Iteration: 5001 / 10000 [ 50%]  (Sampling)
+Chain 1: Iteration: 2000 / 10000 [ 20%]  (Warmup)
+Chain 2: Iteration: 5000 / 10000 [ 50%]  (Warmup)
+Chain 2: Iteration: 5001 / 10000 [ 50%]  (Sampling)
+Chain 3: Iteration: 6000 / 10000 [ 60%]  (Sampling)
+Chain 4: Iteration: 4000 / 10000 [ 40%]  (Warmup)
+Chain 3: Iteration: 7000 / 10000 [ 70%]  (Sampling)
+Chain 4: Iteration: 5000 / 10000 [ 50%]  (Warmup)
+Chain 4: Iteration: 5001 / 10000 [ 50%]  (Sampling)
+Chain 3: Iteration: 8000 / 10000 [ 80%]  (Sampling)
+Chain 3: Iteration: 9000 / 10000 [ 90%]  (Sampling)
+Chain 1: Iteration: 3000 / 10000 [ 30%]  (Warmup)
+Chain 2: Iteration: 6000 / 10000 [ 60%]  (Sampling)
+Chain 3: Iteration: 10000 / 10000 [100%]  (Sampling)
+Chain 3: 
+Chain 3:  Elapsed Time: 2106.17 seconds (Warm-up)
+Chain 3:                3155.77 seconds (Sampling)
+Chain 3:                5261.95 seconds (Total)
+Chain 3: 
+Chain 4: Iteration: 6000 / 10000 [ 60%]  (Sampling)
+Chain 1: Iteration: 4000 / 10000 [ 40%]  (Warmup)
+Chain 2: Iteration: 7000 / 10000 [ 70%]  (Sampling)
+Chain 4: Iteration: 7000 / 10000 [ 70%]  (Sampling)
+Chain 1: Iteration: 5000 / 10000 [ 50%]  (Warmup)
+Chain 1: Iteration: 5001 / 10000 [ 50%]  (Sampling)
+Chain 2: Iteration: 8000 / 10000 [ 80%]  (Sampling)
+Chain 4: Iteration: 8000 / 10000 [ 80%]  (Sampling)
+Chain 1: Iteration: 6000 / 10000 [ 60%]  (Sampling)
+Chain 2: Iteration: 9000 / 10000 [ 90%]  (Sampling)
+Chain 4: Iteration: 9000 / 10000 [ 90%]  (Sampling)
+Chain 1: Iteration: 7000 / 10000 [ 70%]  (Sampling)
+Chain 2: Iteration: 10000 / 10000 [100%]  (Sampling)
+Chain 2: 
+Chain 2:  Elapsed Time: 2456.33 seconds (Warm-up)
+Chain 2:                12084.8 seconds (Sampling)
+Chain 2:                14541.1 seconds (Total)
+Chain 2: 
+Chain 4: Iteration: 10000 / 10000 [100%]  (Sampling)
+Chain 4: 
+Chain 4:  Elapsed Time: 3575.24 seconds (Warm-up)
+Chain 4:                11944.3 seconds (Sampling)
+Chain 4:                15519.6 seconds (Total)
+Chain 4: 
+Chain 1: Iteration: 8000 / 10000 [ 80%]  (Sampling)
+Chain 1: Iteration: 9000 / 10000 [ 90%]  (Sampling)
+Chain 1: Iteration: 10000 / 10000 [100%]  (Sampling)
+Chain 1: 
+Chain 1:  Elapsed Time: 9454.76 seconds (Warm-up)
+Chain 1:                11534.4 seconds (Sampling)
+Chain 1:                20989.2 seconds (Total)
+Chain 1: 
+                 Estimate    Est.Error     l-95% CI     u-95% CI     Rhat
+Sm_Intercept -0.001315024 3.525549e-02 -0.060448396  0.057755643 1.797457
+Xm_Intercept  0.003881905 2.662059e-03 -0.001347449  0.009056863 1.000992
+Sm_Z1        -0.311959252 7.082408e-01 -1.483880445  0.912555330 1.913109
+Sm_Z2         0.894333410 1.843313e+00 -1.528495346  3.474607622 2.297742
+Y1_Z1        -0.304553912 4.913893e-01 -1.310690884  0.525195539 1.385608
+Y1_Z2         0.869906295 1.104843e+00 -0.697319484  3.372652145 2.106374
+Y2_Z1        -0.305232057 4.916558e-01 -1.310720750  0.523368432 1.385631
+Y2_Z2         0.872586791 1.105428e+00 -0.698283082  3.376052950 2.106500
+Y3_Z1        -0.312240336 4.913372e-01 -1.317275072  0.515027109 1.385543
+Y3_Z2         0.869209567 1.104828e+00 -0.698010023  3.374735509 2.106168
+Xm_Z1        -1.003082119 5.296586e-03 -1.013652203 -0.992763597 1.000409
+Xm_Z2         1.005010676 5.206225e-03  0.994735212  1.015233276 1.002255
+Sm_miXm       0.031379371 1.610663e+00 -2.149263647  2.131624446 2.236132
+Y1_miSm      -0.063943061 1.293810e+00 -1.814319554  1.534446859 2.748911
+Y2_miSm      -0.063969834 1.294492e+00 -1.814918785  1.534602687 2.750015
+Y3_miSm      -0.063936981 1.293854e+00 -1.815182360  1.534032104 2.749588
+W1_miXm       1.000001768 1.006569e-04  0.999805332  1.000198154 1.000942
+W2_miXm       0.999999008 1.006182e-04  0.999801367  1.000196600 1.000087
+W3_miXm       0.999998226 9.839157e-05  0.999803804  1.000191247 1.000391
+W4_miXm       1.000002603 9.979032e-05  0.999809488  1.000199207 1.000286
+                 Bulk_ESS    Tail_ESS
+Sm_Intercept     5.836792    46.25626
+Xm_Intercept  4532.986998  8964.45477
+Sm_Z1            5.594654    32.73863
+Sm_Z2            5.003382    25.65586
+Y1_Z1            8.811865    23.13981
+Y1_Z2            5.275507    11.51547
+Y2_Z1            8.810647    22.93169
+Y2_Z2            5.275400    11.57029
+Y3_Z1            8.813660    23.00013
+Y3_Z2            5.275922    11.53040
+Xm_Z1         4002.991180  8847.50253
+Xm_Z2         3840.060172  7102.58256
+Sm_miXm          5.058476    31.01674
+Y1_miSm          4.672777    21.45736
+Y2_miSm          4.672021    21.35359
+Y3_miSm          4.672319    21.60139
+W1_miXm      20125.074811 11807.85347
+W2_miXm      20243.184120 10276.46676
+W3_miXm      20348.373518 11384.41650
+W4_miXm      20098.319068 11823.95284
+           Estimate   Est.Error   l-95% CI   u-95% CI     Rhat    Bulk_ESS
+sigma_Sm 0.81796348 0.148633856 0.55241092 1.07214308 1.634097    6.712469
+sigma_Y1 0.09533305 0.002000255 0.09144765 0.09930708 1.000464 7190.200475
+sigma_Y2 0.09703828 0.001980097 0.09313929 0.10092329 1.000764 7204.142827
+sigma_Y3 0.10281275 0.001988923 0.09899372 0.10674869 1.000743 7316.738889
+sigma_Xm 0.10422629 0.002664694 0.09897649 0.10936262 1.003616 1942.471907
+sigma_W1 0.19827112 0.003012630 0.19232964 0.20422015 1.001323 5514.797266
+sigma_W2 0.20381620 0.002976704 0.19806647 0.20974869 1.000681 6462.075936
+sigma_W3 0.20337625 0.003041778 0.19741056 0.20944491 1.000573 5772.520087
+sigma_W4 0.19992856 0.002976589 0.19415230 0.20576732 1.000427 5448.897462
+            Tail_ESS
+sigma_Sm    21.82159
+sigma_Y1 11023.18107
+sigma_Y2  9819.99470
+sigma_Y3 10156.63929
+sigma_Xm  4785.42714
+sigma_W1  9694.44872
+sigma_W2 10195.18933
+sigma_W3  9466.71386
+sigma_W4  9427.24541

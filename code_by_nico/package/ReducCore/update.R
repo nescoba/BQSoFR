@@ -14,6 +14,9 @@ updateGam <- function(Thet, Y, Zmod, Sig0.gam0, Mu0.gam0) {
   # c(TruncatedNormal::rtmvnorm(n=1, mu = Mu.gam, sigma = as.positive.definite(Sig.gam), lb = rep(-15,length(Mu.gam)), ub = rep(15,length(Mu.gam))))
 }
 
+updateGam <- cmpfun(updateGam)
+
+
 updateSigGam <- function(Thet, al0, bet0, order = 2) {
   K <- length(Thet$Gamma)
   al <- al0 + .5 * (K - order)
