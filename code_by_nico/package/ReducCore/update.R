@@ -727,3 +727,71 @@ udapateXi2V <- function(Thet, Y, Zmod, Wn, Mn, A = A, B = B) {
 }
 # udapateXi2V <- Vectorize(udapateXi2V,"i")
 udapateXi2V <- cmpfun(udapateXi2V)
+
+updateGamBeta <- function(Thet, Y, Zmod, InvSig0.bet0, Mu0.bet0) {
+  # Zmod <-  Z #cbind(1,Z)
+  Y.td <- Y - Thet$X %*% Thet$Gamma - Thet$Ck[Thet$Cik.e] * abs(Thet$gamk[Thet$Cik.e]) * Thet$si - Thet$Ak[Thet$Cik.e] * Thet$nui # Thet$muk.e[Thet$Cik.e]
+  # InvSig0.gam0 <- 1.0*as.inverse(Sig0.gam0) #, P.mat(length(Thet$Gamma))/Thet$siggam))
+  Xmod <- Zmod
+  X_sc <- sweep(Xmod, MARGIN = 1, (sqrt(Thet$sig2k.e[Thet$Cik.e]) * Thet$Bk[Thet$Cik.e] * Thet$nui), FUN = "/") ## n*pn
+
+  Sig.gam <- as.inverse(as.symmetric.matrix(crossprod(X_sc, Xmod) + InvSig0.bet0))
+  Mu.gam <- c(Sig.gam %*% (crossprod(X_sc, Y.td) + InvSig0.bet0 %*% Mu0.bet0))
+
+  c(mvtnorm::rmvnorm(n = 1, mean = Mu.gam, sigma = as.positive.definite(Sig.gam)))
+  # c(TruncatedNormal::rtmvnorm(n=1, mu = Mu.gam, sigma = as.positive.definite(Sig.gam), lb = rep(-6,length(Mu.gam)), ub = rep(6,length(Mu.gam))))
+
+  # c(TruncatedNormal::rtmvnorm(n=1, mu = Mu.gam, sigma = as.positive.definite(Sig.gam), lb = rep(-15,length(Mu.gam)), ub = rep(15,length(Mu.gam))))
+}
+updateGamBeta <- cmpfun(updateGamBeta)
+
+updateGamma0 <- function(Thet, Y, Zmod, InvSig0.gam0, Mu0.gam0) {
+  # Zmod <-  Z #cbind(1,Z)
+  Y.td <- Y - Zmod %*% Thet$BetaZ - Thet$Ck[Thet$Cik.e] * abs(Thet$gamk[Thet$Cik.e]) * Thet$si - Thet$Ak[Thet$Cik.e] * Thet$nui # Thet$muk.e[Thet$Cik.e]
+  # InvSig0.gam0 <- 1.0*as.inverse(Sig0.gam0) #, P.mat(length(Thet$Gamma))/Thet$siggam))
+  Xmod <- Thet$X
+  X_sc <- sweep(Xmod, MARGIN = 1, (sqrt(Thet$sig2k.e[Thet$Cik.e]) * Thet$Bk[Thet$Cik.e] * Thet$nui), FUN = "/") ## n*pn
+
+  Sig.gam <- as.inverse(as.symmetric.matrix(crossprod(X_sc, Xmod) + InvSig0.gam0 * (1 / Thet$siggam)))
+  Mu.gam <- c(Sig.gam %*% (crossprod(X_sc, Y.td) + InvSig0.gam0 %*% Mu0.gam0))
+
+  # c(mvtnorm::rmvnorm(n=1, mean = Mu.gam, sigma = as.positive.definite(Sig.gam)))
+  c(TruncatedNormal::rtmvnorm(n = 1, mu = Mu.gam, sigma = as.positive.definite(Sig.gam), lb = rep(-6, length(Mu.gam)), ub = rep(6, length(Mu.gam))))
+
+  # c(TruncatedNormal::rtmvnorm(n=1, mu = Mu.gam, sigma = as.positive.definite(Sig.gam), lb = rep(-15,length(Mu.gam)), ub = rep(15,length(Mu.gam))))
+}
+updateGamma0 <- cmpfun(updateGamma0)
+
+updateGamma <- function(Thet, Y, Zmod, K0, SigmaProp, c0, g0) {
+  # g0 = 15
+  idk <- Thet$Cik.e
+  # Zmod <-  Z #cbind(1,Z)
+  Ydi <- Y - Zmod %*% Thet$BetaZ #- Thet$Ck[Thet$Cik.e]*abs(Thet$gamk[Thet$Cik.e])*Thet$si - Thet$Ak[Thet$Cik.e]*Thet$nui  #Thet$muk.e[Thet$Cik.e]
+  ei_old <- Ydi - Thet$X %*% Thet$Gamma
+
+  Gam_newk <- TruncatedNormal::rtmvnorm(n = 1, mu = Thet$Gamma, sigma = c0 * SigmaProp, lb = rep(-g0, length(Thet$Gam)), ub = rep(g0, length(Thet$Gam)))
+  ei_new <- Ydi - Thet$X %*% Gam_newk
+
+  logLkold <- sum(log(mapply(fGal.p0, e = ei_old, sig2 = sqrt(Thet$sig2k.e[idk]), gam = Thet$gamk[idk], p = Thet$p[idk], tau0 = Thet$tau0) + .Machine$double.eps))
+  -.5 * quad.form(K0 * (1 / Thet$siggam), Gam_newk) - TruncatedNormal::dtmvnorm(x = Gam_newk, mu = Thet$Gamma, sigma = c0 * SigmaProp, lb = rep(-g0, length(Thet$Gam)), ub = rep(g0, length(Thet$Gam)), log = T)
+  # LaplacesDemon::dmvnp(x = Gam_newk, mu = rep(0, length(Thet$Gamma)), Omega = K0*(1/Thet$siggam), log = T)
+
+  #  (sqrt(Thet$sig2k.e[k]), shape =a.sig,scale = b.sig, log=T) + dunif(Thet$gamk[k], min = 0.95*Thet$gamL , max = 0.95*Thet$gamU, log = T)
+  # - log(truncnorm::dtruncnorm(x = sqrt(Thet$sig2k.e[k]), mean = sig_newk, sd = sdsig.prop, a = a0) + .Machine$double.eps) - log(truncnorm::dtruncnorm(Thet$gamk[k], mean = gam_newk , sd = sdgam.prop, a = 0.95*Thet$gamL, b = .95*Thet$gamU) + .Machine$double.eps))
+
+  logLknew <- sum(log(mapply(fGal.p0, e = ei_new, sig2 = sqrt(Thet$sig2k.e[idk]), gam = Thet$gamk[idk], p = Thet$p[idk], tau0 = Thet$tau0) + .Machine$double.eps))
+  -.5 * quad.form(K0 * (1 / Thet$siggam), Thet$Gamma) - TruncatedNormal::dtmvnorm(x = Thet$Gamma, mu = Gam_newk, sigma = c0 * SigmaProp, lb = rep(-g0, length(Thet$Gam)), ub = rep(g0, length(Thet$Gam)), log = T)
+  #+ LaplacesDemon::dmvnp(x = Thet$Gamma, mu = rep(0, length(Thet$Gamma)), Omega = K0*(1/Thet$siggam), log = T)
+  #+ dgamma(sig_newk, shape =a.sig,scale = b.sig, log=T) + dunif(gam_newk, min = 0.95*Thet$gamL , max = 0.95*Thet$gamU, log = T)
+  #- log(truncnorm::dtruncnorm(x = sig_newk, mean = sqrt(Thet$sig2k.e[k]), sd = sdsig.prop, a = a0) + .Machine$double.eps) - log(truncnorm::dtruncnorm(gam_newk, mean = Thet$gamk[k] , sd = sdgam.prop, a = 0.95*Thet$gamL, b = .95*Thet$gamU) + .Machine$double.eps))
+
+  uv <- logLknew - logLkold
+  jump <- runif(n = 1)
+  if (log(jump) < uv) {
+    res <- c(1, Gam_newk)
+  } else {
+    res <- c(0, Thet$Gamma)
+  }
+  res
+}
+updateGamma <- cmpfun(updateGamma)

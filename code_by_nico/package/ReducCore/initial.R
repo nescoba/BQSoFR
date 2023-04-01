@@ -133,7 +133,7 @@ InitialValuesQR <- function(Y, W, M, Z, df0 = 3, pn, Gx, a, tau0) {
   X0 <- model.matrix(~ Z + Wn)
   lmFit <- quantreg::rq(Y ~ -1 + X0, tau = tau0)
   # summary(lmFit)
-  plot(a, bs2 %*% lmFit$coefficients[-c(1:3)], type = "l")
+  # plot(a, bs2 %*% lmFit$coefficients[-c(1:3)], type = "l")
 
   c_hatW <- lmFit$coefficients
   Res$Gamma <- as.numeric(c_hatW[-c(1:ncol(Zmod))])

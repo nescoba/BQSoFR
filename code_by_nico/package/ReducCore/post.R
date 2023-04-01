@@ -121,23 +121,7 @@ DataSim <- function(pn, n, t, a, j0 = 2, rhox, sig.x, rho.u, sig.u, rho.m, sig.w
 
     met <- c("f1", "f2", "f3", "f4", "f5")
 
-    B.basis <- function(x, knots) {
-        delta <- knots[2] - knots[1]
-        n <- length(x)
-        K <- length(knots)
-        B <- matrix(0, n, K + 1)
-        for (jj in 1:(K - 1))
-        {
-            act.inds <- (1:n)[(x >= knots[jj]) & (x <= knots[jj + 1])]
-            act.x <- x[act.inds]
-            resc.x <- (act.x - knots[jj]) / (knots[jj + 1] - knots[jj])
 
-            B[act.inds, jj] <- (1 / 2) * (1 - resc.x)^2
-            B[act.inds, jj + 1] <- -(resc.x^2) + resc.x + 1 / 2
-            B[act.inds, jj + 2] <- (resc.x^2) / 2
-        }
-        return(B)
-    }
 
 
     P.mat <- function(K) {
@@ -255,23 +239,7 @@ DataSimHeter <- function(pn, n, t, a, j0 = 2, rhox, sig.x, rho.u, sig.u, rho.m, 
 
     met <- c("f1", "f2", "f3", "f4", "f5")
 
-    B.basis <- function(x, knots) {
-        delta <- knots[2] - knots[1]
-        n <- length(x)
-        K <- length(knots)
-        B <- matrix(0, n, K + 1)
-        for (jj in 1:(K - 1))
-        {
-            act.inds <- (1:n)[(x >= knots[jj]) & (x <= knots[jj + 1])]
-            act.x <- x[act.inds]
-            resc.x <- (act.x - knots[jj]) / (knots[jj + 1] - knots[jj])
 
-            B[act.inds, jj] <- (1 / 2) * (1 - resc.x)^2
-            B[act.inds, jj + 1] <- -(resc.x^2) + resc.x + 1 / 2
-            B[act.inds, jj + 2] <- (resc.x^2) / 2
-        }
-        return(B)
-    }
 
 
     P.mat <- function(K) {
