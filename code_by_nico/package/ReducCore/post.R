@@ -115,42 +115,18 @@ Betafunc <- function(t, met) {
 
 #-- Simulate data with constant variance
 DataSim <- function(pn, n, t, a, j0 = 2, rhox, sig.x, rho.u, sig.u, rho.m, sig.w, distFep = c("Rst", "Norm", "MixNorm"), distFUe = c("Rmst", "Mvnorm"), distFepWe = c("Rmst", "Mvnorm"), CovMet = c("CS", "Ar1"), sig.e, idf = c(1:4)) {
-    # Nbasis0 =  c(5, 6, 15, 15) # pn = [which(n == c(100, 200,500,1000))]
-    # J = K = k  = pn = pn00 =  Nbasis0[which(c(100,200,500, 1000) == n)]
-    a <- seq(0, 1, length.out = t) ## time points at which obs. are takes
-
+    a <- seq(0, 1, length.out = t) # time points at which obs. are takes
     met <- c("f1", "f2", "f3", "f4", "f5")
-
-
-
-
-    P.mat <- function(K) {
-        # penalty matrix
-        D <- diag(rep(1, K))
-        D <- diff(diff(D))
-        P <- t(D) %*% D
-        return(P)
-    }
-
-    # Deltafun <- function(a, scale, loc){ (.25 - (a - .5)^2)*scale + rep(loc,length(a))}
-    Deltafun <- function(a, scale, loc) {
-        (1.25 + Betafunc(a, met[idf])) * scale + rep(loc, length(a))
-    }
-
     Delt <- Deltafun(a, scale = 1., loc = .5)
-    # P.mat <- function(K){
-    #   return(ppls::Penalty.matrix(K,order=2))
-    # }
+
+    # plotting
     par(mfrow = c(2, 2))
     plot(a, Betafunc(a, met[idf]), type = "l")
     plot(a, Delt, type = "l")
 
-    # P.mat(3)
-
     #---------------------------------------------------------------------
     #---- Simulate X
     #---------------------------------------------------------------------
-    # sig.x = .5
     SigX <- CovMat(t, CovMet, sig.x, rhox) # ones(t,t)*rhox*sig.x*sig.x; diag(SigX) <- (sig.x^2)
     MeanX <- Betafunc(a, met[idf]) # sinpi(2*a)
     MeanX2 <- Betafunc(a, met[idf]) # sinpi(2*a)

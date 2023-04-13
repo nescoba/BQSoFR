@@ -132,3 +132,15 @@ LogPlostGalLikBet <- function(parm, ei, X, tau0) {
   sum(log(mapply(fGal.p0, e = c(ei2), sig2 = parm[1], gam = parm[2], p = p, tau0 = tau0) + .Machine$double.eps))
   #+ dgamma(parm[1], shape = a.sig, scale = b.sig, log=T) + dunif(parm[2], min = Thet$gamL , max = Thet$gamU, log = T)
 }
+
+P.mat <- function(K) {
+  # penalty matrix
+  D <- diag(rep(1, K))
+  D <- diff(diff(D))
+  P <- t(D) %*% D
+  return(P)
+}
+
+Deltafun <- function(a, scale, loc) {
+  (1.25 + Betafunc(a, met[idf])) * scale + rep(loc, length(a))
+}
