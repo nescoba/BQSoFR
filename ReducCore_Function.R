@@ -20461,7 +20461,9 @@ DataSimReplicate <- function(pn, n, t, a, j0 = 2, rhox, sig.x, rho.u, sig.u, rho
   fx0 = crossprod(t(X_t),BetatF)/length(a)
   }
   
-  Y <- c(Zmod%*%Betaz*Val) + c(fx0)  + (ei - mean(ei))*c(fx0)  #*(crossprod(t(X_t),Betafunc(a,met[idf]))/length(a)) #(ei-mean(ei))  
+  #---- Here we simulate Y with non-canstant variance (dependent on the functional covariate X(t))
+  
+  Y <- c(Zmod%*%Betaz*Val) + c(fx0)  + (ei - mean(ei))*c(fx0 + c(Zmod%*%Betaz*Val))  #*(crossprod(t(X_t),Betafunc(a,met[idf]))/length(a)) #(ei-mean(ei))  
   # #d0*rnorm(n, sd = sig.e) + (1-d0)*(rgamma(n=n,shape=1,scale=1.5) - 1.5) # (n,1) Y matrix
   
   
