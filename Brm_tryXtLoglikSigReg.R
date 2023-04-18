@@ -3,19 +3,160 @@
 #-- Implementing Model in Rstan
 library(brms)
 library(rstan)
-library(splines)
 
+library(LaplacesDemon)
+library(GeneralizedHyperbolic)
+library(mvtnorm)
+library(splines)
+library(nimble)
+library(Matrix)
+library(pracma)
+library(splines2)
+library(truncnorm)
+library(tmvtnorm)
+library(emulator)
+library(mclust)
+library(Rcpp)
+library(compiler)
+library(TruncatedNormal)
+library(inline)
+#library(caret)
+library(data.table)
+#library(RcppFunc)
+#library(ppls)
+library(refund)
+library(mixtools)
+library(KScorrect)
+#library(heavy)
+#library(cascsim)
+#library(RcppFuncVec)
+#library(RcppFunc)
+library(Rmpfr)  
+library(quantreg)
 #-------------------------------------------------------------------------------
 #--- Import Data
 #-------------------------------------------------------------------------------
-source("~/Library/CloudStorage/OneDrive-IndianaUniversity/Join_folder_Annie_DrZoh/NHANES Dataset/2013-2014/BQReg_Nhanes2012_13Application.R")
-load("/Users/rszoh/Library/CloudStorage/OneDrive-IndianaUniversity/Join_folder_Annie_DrZoh/NHANES Dataset/2013-2014/FinalDataV2.RData")
+#source("~/Library/CloudStorage/OneDrive-IndianaUniversity/Join_folder_Annie_DrZoh/NHANES Dataset/2013-2014/BQReg_Nhanes2012_13Application.R")
+#load("/Users/rszoh/Library/CloudStorage/OneDrive-IndianaUniversity/Join_folder_Annie_DrZoh/NHANES Dataset/2013-2014/FinalDataV2.RData")
 
+source("~/Library/CloudStorage/OneDrive-IndianaUniversity/GitHub/BQSoFR/ReducCore_Function.R")
 #-------------------------------------------------------------------------------
 #--- Set up the data
 #-------------------------------------------------------------------------------
+case = "case3a"
+{
+  switch (case, 
+          
+          #case 1 - asymptotic verification
+          "case1a" = {caseN ="case1a"; n = 100; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"},# normal Error / beta(t) = met[1]
+          "case2a" = {caseN ="case2a"; n = 200; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          "case3a" = {caseN ="case3a"; n = 500; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          #"case4a" = {caseN ="case4a"; n = 1000; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          "case4a" = {caseN ="case4a"; n = 1000; sig.e=.4; sig.x = .5; sig.u = .5; sig.w=.4; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          
+          #case 1 - asymptotic verification
+          "case1" = {caseN ="case1"; n = 100; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"},# normal Error / beta(t) = met[1]
+          "case2" = {caseN ="case2"; n = 200; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          "case3" = {caseN ="case3"; n = 500; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          "case4" = {caseN ="case4"; n = 1000; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          #"case32" = {caseN ="case32"; n = 500; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=4; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"},
+          
+          #-- different Delta
+          "case5" = {caseN ="case5"; n = 500; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=.1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          
+          #-- Skew istributions
+          "case6" = {caseN ="case6"; n = 100; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Gam"}, # Gamma(1,1.5) Error/ beta(t) = met[1]
+          "case7" = {caseN ="case7"; n = 200; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Gam"}, # Gamma(1,1.5) Error/ beta(t) = met[1]
+          "case8" = {caseN ="case8"; n = 500; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Gam"}, # Gamma(1,1.5) Error/ beta(t) = met[1]
+          "case8a" = {caseN ="case8a"; n = 500; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "MixNorm"}, # Gamma(1,1.5) Error/ beta(t) = met[1]
+          
+          "case9" = {caseN ="case9"; n = 1000; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Gam"}, # Gamma(1,1.5) Error/ beta(t) = met[1]
+          
+          #-- Function 
+          "case10" = {caseN ="case10"; n = 100; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+2; idf = 3;distF <- "Norm"}, # Gamma(1,1.5) Error/ beta(t) = met[1]
+          "case10a" = {caseN ="case10a"; n = 200; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+2; idf = 3;distF <- "Norm"}, # 
+          "case10b" = {caseN ="case10b"; n = 500; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+2; idf = 3;distF <- "Norm"},
+          "case10c" = {caseN ="case10c"; n = 1000; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+2; idf = 3;distF <- "Norm"},
+          
+          # Varying sig.u 
+          "case11" = {caseN ="case11"; n = 500; sig.e=1; sig.x = 4; sig.u = 0.5; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error / beta(t) = met[1]
+          "case12" = {caseN ="case12"; n = 500; sig.e=1; sig.x = 4; sig.u = 1; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          "case13" = {caseN ="case13"; n = 500; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, #normal Error/ beta(t) = met[1]
+          "case14" = {caseN ="case14"; n = 500; sig.e=1; sig.x = 4; sig.u = 16; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          
+          # Varying sig.w 
+          "case15" = {caseN ="case15"; n = 500; sig.e=1; sig.x = 4; sig.u = 1; sig.w=0.5; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error / beta(t) = met[1]
+          "case16" = {caseN ="case16"; n = 500; sig.e=1; sig.x = 4; sig.u = 1;   sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          "case17" = {caseN ="case17"; n = 500; sig.e=1; sig.x = 4; sig.u = 1;  sig.w=4; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, #normal Error/ beta(t) = met[1]
+          "case18" = {caseN ="case18"; n = 500; sig.e=1; sig.x = 4; sig.u = 1; sig.w=16; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          
+          #varying rhox   
+          "case19" = {caseN ="case19"; n = 500; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=.1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          "case20" = {caseN ="case20"; n = 500; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = .25; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error / beta(t) = met[1]
+          "case21" = {caseN ="case21"; n = 500; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = .5; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          "case22" = {caseN ="case22"; n = 500; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = .75; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, #normal Error/ beta(t) = met[1]
+          
+          #varying rho.u
+          "case23" = {caseN ="case23"; n = 500; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = .25; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          "case24" = {caseN ="case24"; n = 500; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = .5; rho.m = 0; Delta=.1; t = 50; pn = ceiling(n^{1/3.8}) + 1; idf = 1; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          "case25" = {caseN ="case25"; n = 500; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = .75; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error / beta(t) = met[1]
+          
+          #varying rhox.m 
+          "case26" = {caseN ="case26"; n = 500; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = .0; rho.u = 0; rho.m = 0.25; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          "case27" = {caseN ="case27"; n = 500; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = .0; rho.u = 0; rho.m = 0.50; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, #normal Error/ beta(t) = met[1]
+          "case28" = {caseN ="case28"; n = 500; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = .0; rho.u = 0; rho.m = 0.75; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          
+          #various Delta
+          "case29" = {caseN ="case29"; n = 500; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=.25; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          "case30" = {caseN ="case30"; n = 500; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=.5; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          "case31" = {caseN ="case31"; n = 500; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=2; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          "case32" = {caseN ="case32"; n = 500; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=4; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          
+          
+          #Sigx
+          "case33" = {caseN ="case33"; n = 500; sig.e=1; sig.x = .5; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error / beta(t) = met[1]
+          "case34" = {caseN ="case34"; n = 500; sig.e=1; sig.x = 1; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          "case35" = {caseN ="case35"; n = 500; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"}, #normal Error/ beta(t) = met[1]
+          "case36" = {caseN ="case36"; n = 500; sig.e=1; sig.x = 16; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+1; idf = 1; distF <- "Norm"} # normal Error/ beta(t) = met[1]
+          
+          
+          
+          #"case29" = {caseN ="case29"; n = 100; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+2; idf = 2; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          #"case30" = {caseN ="case30"; n = 200; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+2; idf = 2; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          #"case31" = {caseN ="case31"; n = 500; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+2; idf = 2; distF <- "Norm"}, # normal Error/ beta(t) = met[1]
+          #"case32" = {caseN ="case32"; n = 1000; sig.e=1; sig.x = 4; sig.u = 4; sig.w=1; rhox = 0; rho.u = 0; rho.m = 0; Delta=1; t = 50; pn = ceiling(n^{1/3.8})+2; idf = 2; distF <- "Norm"} # normal Error/ beta(t) = met[1]
+          
+  )
+}
+
+
+#--- Source importan functions
+#source("Core_Function.R")
+pn = 10
+nrep = 5
+#DataSim <- DataSim(pn, n, t, a, j0=2, rhox, sig.x, rho.u, sig.u, rho.m, sig.w, distFep=c("Rst", "Norm","MixNorm")[2], distFUe = c("Rmst","Mvnorm")[2], distFepWe=c("Rmst","Mvnorm")[1], CovMet =c("CS", "Ar1")[2], sig.e, idf=c(1:4)[3])
+Wdist = "norm"
+DataSim <- DataSimReplicate(pn, n, t, a, j0 = 2, rhox, sig.x, rho.u, sig.u, rho.m, sig.w, distFep=c("Rst", "Norm","MixNorm")[2], distFUe = c("Rmst","Mvnorm")[2], distFepWe=c("Rmst","Mvnorm")[2], CovMet =c("CS", "Ar1")[1], sig.e, idf=c(1:4)[1], nrep, Wdist,Z)
+
+#--- Assign data 
+Y <- DataSim$Y
+W <- DataSim$Data$W
+M <- DataSim$Data$W
+X <- DataSim$Data$X
+a <- DataSim$a
+Delt <- DataSim$Delt
+Z <- DataSim$Z
+
+
+#-------------------------------------
 # You need Warray (n x T x nRep)
 #
+Warray = array(NA, dim = dim(DataSim$Data$Wrep)[c(3,2,1)])
+
+for(j in 1:dim(Warray)[3]){
+  Warray[,,j] = t(DataSim$Data$Wrep[j,,])
+}
+
 pn = 10
 a <- seq(0,1, length = dim(Warray)[2])
 bs2 <- bs(a, df = pn, intercept = T)
@@ -38,7 +179,7 @@ Wt <- (Xt%*%bs2)/length(a)
 
 #--- df_sample is a dataframe with the Y (response), Z (covariates); Wt (n x pn) is the functional data ()
 
-df_sampleWt <- data.frame(df_sample, W = Wt) #[1:200,]
+df_sampleWt <- data.frame(Y, Z, W = Wt) #[1:200,]
 
 
 
@@ -56,8 +197,8 @@ df_sampleWt <- data.frame(df_sample, W = Wt) #[1:200,]
 #-------------------------------------------------------------------------------
 tau0 = .1
 
-form <- paste0("Y ~ ", paste(c("Gender","Race","HealthCondt2","AgeYR", colnames(df_sampleWt)[grepl("W",colnames(df_sampleWt))]), collapse = " + "))
-Dt0 <- make_standata(bf(as.formula(form), quantile = tau0), data = df_sampleWt[c(1:nrow(df_sampleWt)),], family = asym_laplace())
+#form <- paste0("Y ~ ", paste(c("Gender","Race","HealthCondt2","AgeYR", colnames(df_sampleWt)[grepl("W",colnames(df_sampleWt))]), collapse = " + "))
+#Dt0 <- make_standata(bf(as.formula(form), quantile = tau0), data = df_sampleWt[c(1:nrow(df_sampleWt)),], family = asym_laplace())
 #, stanvars = stanvars2, prior = bprior,chains = 2,iter = 500, control = list(adapt_delta = 0.97), data2 = list(M = rep(0, 29), V = SigbPrio))
 
 
@@ -68,7 +209,7 @@ fitCase2b <- list()
 fitCase3  <- list()
 fitCase4  <- list()
 fitCase5  <- list()
-tauVal <- c(.1,.5,.9) # (quantile values to consider)
+tauVal <- c(.2,.5,.8) # (quantile values to consider)
 Niter = 5000
 Nchain = 2
 
@@ -890,21 +1031,33 @@ sigma += Intercept_sigma + Xs_sigma * bs_sigma + Zs_sigma_1_1 * s_sigma_1_1 + Wn
   #form2 <- paste0("Y ~ ", paste(c("Gender","Race","HealthCondt2","AgeYR", colnames(df2)[grepl("W",colnames(df2))]), collapse = " + "))
   
   #--- You need to have two formula  - one for the mean and the other for the sigma
-  form_mu = as.form
-    
-  form_sigma = 
+  #-- Linear effects 
+  form_mu = paste0("Y ~", paste(c(colnames(df_sampleWt)[grepl("X",colnames(df_sampleWt))], colnames(df_sampleWt)[grepl("W",colnames(df_sampleWt))]), collapse = " + ")) # formula for the response
+  form_mu
+  
+  #--- Non linear effect
+  form_mu = paste0("Y ~ X1 + X2 + s(X3) + ", paste(c(colnames(df_sampleWt)[grepl("W",colnames(df_sampleWt))]), collapse = " + ")) # formula for the response
+  form_mu  
+  
+   
+  #--- Linear effect on sigma
+  form_sigma = paste0("sigma ~", paste(c(colnames(df_sampleWt)[grepl("X",colnames(df_sampleWt))], colnames(df_sampleWt)[grepl("W",colnames(df_sampleWt))]), collapse = " + ")) # formula for the response  # formula for log(sigma)
+  
+  #--- Non-linear effect
+  form_sigma = paste0("sigma ~ X1 + X2 + s(X3) + ", paste(c(colnames(df_sampleWt)[grepl("W",colnames(df_sampleWt))]), collapse = " + ")) # formula for the response
+  
   
   
   #--- Replace here with a model formula so that brms can create the data
     #-- The line below will create the data you need but you ned to trick it a littiel bit
   Dt2 <- make_standata(bf(as.formula(form_mu), as.formula(form_sigma), quantile = tau0), data = df2[c(1:nrow(df2)),], family = asym_laplace())
+
   
   Dt2$pn = pn
   Dt2$Xold <- Dt2$X
   Dt2$X <- Dt2$Xold[,!grepl("W.[0-9]", colnames(Dt2$Xold))]
   Dt2$Wn <- Dt2$Xold[,grepl("W.[0-9]", colnames(Dt2$Xold))]; dim(Dt2$Wn)
   Dt2$M <- numeric(Dt2$pn)
-  Dt2$V <- as.positive.definite(as.inverse(P.mat(pn) + diag(rep(.01, pn))))*.1
   Dt2$K <- ncol(Dt2$X)
   Bd <- GamBnd(tau0)[1:2]
   Dt2$Bd <- Bd*.9
@@ -915,6 +1068,314 @@ sigma += Intercept_sigma + Xs_sigma * bs_sigma + Zs_sigma_1_1 * s_sigma_1_1 + Wn
   fitCase2[[l]] <- stan(model_code = StandCodeVGalLin,
                         data = Dt2, iter = Niter, chains = Nchain, verbose = TRUE,control = list(adapt_delta = 0.99,max_treedepth=11), cores = 2, seed = 1123)
   
+  
+  #--- Posterior analysis
+  
+  #--- Takes 2 output
+  PostAnalyStan <- function(fit,  Bx=bs2, tau0, df0=10, smoothT = F){
+    
+    #----------------------------------------------------
+    met <- c("f1","f2","f3","f4","f5")
+    #---  Beta function
+    Betafunc <- function(t, met){
+      switch(met,
+             f1 = 1.*sin(2*pi*t) + 1.5 ,
+             f2 = 1/(1+exp(4*2*(t-.5))),
+             f3 = 1.*sin(pi*(8*(t-.5))/2)/ (1 + (2*(8*(t-.5))^2)*(sign(8*(t-.5))+1)) + 1.5,
+             f4 = sin(pi*(16*(t-.5))/2)/ (1 + (2*(16*(t-.5))^2)*(.5*sin(8*(t-.5))+1)),
+             f5 = sin(pi*(16*(t-.5))/2)/ (1 + (2*(16*(t-.5))^2)*(sin(8*(t-.5))+1))
+      )
+    }
+    idf = 1
+    
+    
+    #----------------------------------------------------
+    
+    PostMat <- as.matrix(fit)
+    tau <-  PostMat[1, grepl("tau",colnames(PostMat))]
+    b <- PostMat[, c("Intercept","b_Intercept", paste0("bs[",1,"]"))]
+    Gam <- PostMat[, grepl("bwa", colnames(PostMat))] # 
+    #Gamx <- PostMatx[, grepl("bwa", colnames(PostMatx))] #
+    
+    
+    #--- Format time to hh:MM
+    timeHM_formatter <- function(x) {
+      h <- floor(x/60)
+      m <- floor(x %% 60)
+      lab <- sprintf("%d:%02d", h, m) # Format the strings as HH:MM
+      return(lab)
+    }
+    
+    
+    
+    if(smoothT){
+      betastp <- PostMat[,c("bs[1]", grepl("s_1_1", colnames(PostMat)))] 
+      betmvpa <- PostMat[,c("bs[2]", grepl("s_2_1", colnames(PostMat)))]
+      
+      betastpx <- PostMat[,c("bs[1]", grepl("s_1_1", colnames(PostMatx)))]
+      betmvpax <- PostMat[,c("bs[2]", grepl("s_2_1", colnames(PostMatx)))]
+      
+      #--- Now collect basis and all
+      Zastp <- cbind(Dt0$Xs[,1], Dt0$Zs_1_1)
+      Zmvpa <- cbind(Dt0$Xs[,2], Dt0$Zs_2_1)
+    }
+    # bs <- PostMat[, grepl("bs", colnames(PostMat))] # 
+    #Gam <- PostMat[, grepl("b_W", colnames(PostMat))] #
+    #---------------------------------------------------------------------------
+    #--- Plot the estimates
+    #---------------------------------------------------------------------------
+    Fw <- Gam %*% t(Bx)
+    #Fwx <- Gamx %*% t(Bx)
+    
+    if(smoothT){
+      AstpF <- betastp %*% t(Zastp)
+      MvpaF <- betmvpa %*% t(Zmvpa)
+      
+      AstpFx <- betastpx %*% t(Zastp)
+      MvpaFx <- betmvpax %*% t(Zmvpa)
+    }
+    
+    FwSmth <- matrix(NA, ncol=ncol(Fw), nrow=nrow(Fw))
+    FwSmthx <- matrix(NA, ncol=ncol(Fw),nrow=nrow(Fw))
+    
+    #--- Smooth these results
+    if(smoothT){
+      AstpFsm <- matrix(NA, ncol=ncol(AstpF), nrow=nrow(AstpF))
+      MvpaFsm <- matrix(NA, ncol=ncol(MvpaF), nrow=nrow(MvpaF))
+      
+      AstpFxsm <- matrix(NA, ncol=ncol(AstpFx), nrow=nrow(AstpFx))
+      MvpaFxsm <- matrix(NA, ncol=ncol(MvpaFx), nrow=nrow(MvpaFx))
+    }
+    
+    x = seq(-.1,1.1,length = ncol(Fw))
+    for(i in 1:nrow(Fw)){
+      FwSmth[i,] <- smooth.spline(x,Fw[i,], df=df0)$y
+     FwSmthx[i,] <- 1.5*((Betafunc(x,met[idf]) - mean(Betafunc(x,met[idf])))*c(1,2,2, 2)[idf] + qnorm(tau)*((Betafunc(x,met[idf]) - mean(Betafunc(x,met[idf])))*c(1,2,2, 2)[idf]))
+      
+      if(smoothT){
+        AstpFsm[i,] <- smooth.spline(Zastp[,1],AstpF[i,], df=df0)$y
+        MvpaFsm[i,] <- smooth.spline(Zmvpa[,1],MvpaF[i,], df=df0)$y
+        
+        AstpFxsm[i,] <- smooth.spline(Zastp[,1],AstpFx[i,], df=df0)$y
+        MvpaFxsm[i,] <- smooth.spline(Zmvpa[,1],MvpaFx[i,], df=df0)$y
+      }
+    }
+    id <- which(x > 0 & x < 1)
+    x <- x[id]
+    Fw <- Fw[,id]
+    FwSmth <- FwSmth[,id]
+    #Fwx <- Fwx[,id]
+    FwSmthx <- FwSmthx[,id]
+    
+    #FwSmth <- apply(Fw, 1, smooth.spline)
+    # fAstp <- tcrossprod(bs[,1], Dt0$Xs[,1]) + tcrossprod(PostMat[, grepl("^*s_1_1", colnames(PostMat))], Dt0$Zs_1_1)
+    # fMvpa <- tcrossprod(bs[,2], Dt0$Xs[,2]) + tcrossprod(PostMat[, grepl("^*s_2_1", colnames(PostMat))], Dt0$Zs_2_1)
+    # 
+    # list(Fw =Fw, fAstp = fAstp, fMvpa = fMvpa)
+    
+    # od1 <- order(Dt0$Xs[,1])
+    # od2 <- order(Dt0$Xs[,2])
+    if(smoothT){
+      #par(mfrow=c(2,2))
+      #conditional_smooths(fit,ask = F)
+      #plot(conditional_effects(fit,effects = c("MnASTP", "MnMVPA"))) 
+      dat1 <- as.matrix(cbind(t(apply(AstpFxsm, 2, quantile, probs=c(0.025,.975))), colMeans(AstpFxsm), colMeans(AstpFsm) ) )
+      p1 <- ggmatplot(x = Df$MnASTP, dat1 ,
+                      plot_type = "line", color = c("black","black","red","green"),linetype=1,xlab="ASTP",ylab="", main = paste(tau)) + geom_hline(yintercept = 0, colour="grey",size=2,linetype = 2) 
+      
+      
+      dat2 <- as.matrix(cbind(t(apply(MvpaFxsm, 2, quantile, probs=c(0.025,.975))), colMeans(MvpaFxsm), colMeans(MvpaFsm) ) )
+      p2 <- ggmatplot(x = px[[2]]$data$MnMVPA, dat2 ,
+                      plot_type = "line", color = c("black","black","red","green"),linetype=1,xlab="MVPA",ylab="", main = paste(tau)) + geom_hline(yintercept = 0, colour="grey",size=2,linetype = 2) 
+      
+      # p1 = plot(conditional_smooths(fit,"s(MnASTP, bs='ps', k=11)"), ask = F) #s(MnASTP, bs='ps', k=11)
+      # p2 = plot(conditional_smooths(fit,"s(MnMVPA, bs='ps', k=11)"), ask = F) # s(MnMVPA)
+      #p1 = plot(conditional_smooths(fit,"s(MnASTP)"), ask = F) #s(MnASTP, bs='ps', k=11)
+      #p2 = plot(conditional_smooths(fit,"s(MnMVPA)"), ask = F) # s(MnMVPA)
+      Reso <- cbind(t(apply(FwSmthx,2,quantile, probs=c(0.025, 0.975))), colMeans(FwSmthx), colMeans(FwSmth))
+      p3 <- ggmatplot(x, Reso ,
+                      plot_type = "line", color = c("black","black","red","green"),linetype=1,xlab="Time",ylab="", main = paste(tau)) + geom_hline(yintercept = 0, colour="grey",size=2,linetype = 2) 
+      
+      #print(p3)
+      #print(wrap_plots(p[[1]], p[[2]], p3))
+      pf3 =  (p1 | p2) / p3 
+      
+      
+      
+      
+    }else{
+      #par(mfrow=c(2,2))}
+      # matplot((Dt0$Xs[,1])[od1], (t(rbind(apply(fAstp,2,quantile, probs=c(0.025, 0.975)), colMeans(fAstp))))[od1,], type="l", lwd=3, xlab= "ASTP",ylab="")
+      # matplot((Dt0$Xs[,2])[od2], (t(rbind(apply(fMvpa,2,quantile, probs=c(0.025, 0.975)), colMeans(fMvpa))))[od2,], type="l", lwd=3, xlab= "MVPA",ylab="")
+      # matplot(x, t(rbind(apply(Fw,2,quantile, probs=c(0.025, 0.975)), colMeans(Fw))), type="l", lty=1,lwd=3, xlab= "Time",ylab="Gamma", main = paste(tau))
+      # abline(h=0,lwd=3,col="lightgrey",lty=2)
+      # matplot(x, t(rbind(apply(FwSmth,2,quantile, probs=c(0.025, 0.975)), colMeans(FwSmth))), type="l", lty=1, lwd=3, xlab= "Time",ylab="Gamma", main = paste(tau))
+      # abline(h=0,lwd=3,col="lightgrey",lty=2)
+      Reso <- cbind(t(rbind(apply(FwSmth,2,quantile, probs=c(0.025, 0.975)), colMeans(FwSmthx), colMeans(FwSmth))))
+      p3 <- ggmatplot(x*1439, Reso,
+                      plot_type = "line", color = c("black","black","red","green"),linetype=c(1,1,2,4), linewidth=2,xlab="Time",ylab="", main = paste(tau)) + geom_hline(yintercept = 0, colour="grey",size=2,linetype = 2) 
+      
+      p3.1 <- p3 + theme(axis.text = element_text(face="bold"),
+                         axis.text.x = element_text(size=12, face="bold", colour = "black"), 
+                         # axis.text.y = element_text(size=12,  colour = "black"), # unbold
+                         axis.title.x = element_text(size=14, face="bold", colour = "black"),
+                         axis.text.y = element_text(size=12, face="bold", colour = "black")) + scale_fill_discrete(name = " ", labels = c("", "2.5%-97.5%", "ME Correct.","Naive")) + scale_x_continuous(
+                           name = "Time",
+                           breaks = seq(0, 1439, by = 120),
+                           labels = timeHM_formatter, guide = guide_axis(angle = 45)) + labs(fill=' ') + theme(legend.position="none")
+      print(p3.1)
+    }
+  }
+  
+  #--- Takes 2 output
+  PostAnalyStanV3 <- function(fit, fitx,fitx2 , Bx=bs2, Dt0, Df, df0=10, smoothT = F, sig=0.1){
+    
+    PostMat <- as.matrix(fit)
+    PostMatx <- as.matrix(fitx)
+    PostMatx2 <- as.matrix(fitx2)
+    
+    tau <-  PostMat[1, grepl("tau",colnames(PostMat))]
+    b <- PostMat[, c("Intercept","b_Intercept", paste0("b[",1:7,"]"))]
+    Gam <- PostMat[, grepl("bwa", colnames(PostMat))] # 
+    Gamx <- PostMatx[, grepl("bwa", colnames(PostMatx))] #
+    Gamx2 <- PostMatx2[, grepl("bwa", colnames(PostMatx2))] #
+    
+    #--- Format time to hh:MM
+    timeHM_formatter <- function(x) {
+      h <- floor(x/60)
+      m <- floor(x %% 60)
+      lab <- sprintf("%d:%02d", h, m) # Format the strings as HH:MM
+      return(lab)
+    }
+    
+    
+    
+    if(smoothT){
+      betastp <- PostMat[,c("bs[1]", grepl("s_1_1", colnames(PostMat)))] 
+      betmvpa <- PostMat[,c("bs[2]", grepl("s_2_1", colnames(PostMat)))]
+      
+      betastpx <- PostMat[,c("bs[1]", grepl("s_1_1", colnames(PostMatx)))]
+      betmvpax <- PostMat[,c("bs[2]", grepl("s_2_1", colnames(PostMatx)))]
+      
+      #--- Now collect basis and all
+      Zastp <- cbind(Dt0$Xs[,1], Dt0$Zs_1_1)
+      Zmvpa <- cbind(Dt0$Xs[,2], Dt0$Zs_2_1)
+    }
+    # bs <- PostMat[, grepl("bs", colnames(PostMat))] # 
+    #Gam <- PostMat[, grepl("b_W", colnames(PostMat))] #
+    #---------------------------------------------------------------------------
+    #--- Plot the estimates
+    #---------------------------------------------------------------------------
+    Fw <- Gam %*% t(Bx)
+    Fwx <- Gamx %*% t(Bx)
+    Fwx2 <- Gamx2 %*% t(Bx)
+    
+    if(smoothT){
+      AstpF <- betastp %*% t(Zastp)
+      MvpaF <- betmvpa %*% t(Zmvpa)
+      
+      AstpFx <- betastpx %*% t(Zastp)
+      MvpaFx <- betmvpax %*% t(Zmvpa)
+    }
+    
+    FwSmth <- matrix(NA, ncol=ncol(Fw), nrow=nrow(Fw))
+    FwSmthx <- matrix(NA, ncol=ncol(Fwx),nrow=nrow(Fwx))
+    FwSmthx2 <- matrix(NA, ncol=ncol(Fwx2),nrow=nrow(Fwx2))
+    
+    #--- Smooth these results
+    if(smoothT){
+      AstpFsm <- matrix(NA, ncol=ncol(AstpF), nrow=nrow(AstpF))
+      MvpaFsm <- matrix(NA, ncol=ncol(MvpaF), nrow=nrow(MvpaF))
+      
+      AstpFxsm <- matrix(NA, ncol=ncol(AstpFx), nrow=nrow(AstpFx))
+      MvpaFxsm <- matrix(NA, ncol=ncol(MvpaFx), nrow=nrow(MvpaFx))
+    }
+    
+    x = seq(-.1,1.1,length = ncol(Fw))
+    for(i in 1:nrow(Fw)){
+      FwSmth[i,] <- smooth.spline(x,Fw[i,], df=df0)$y
+      FwSmthx[i,] <- smooth.spline(x,Fwx[i,], df=df0)$y
+      FwSmthx2[i,] <- smooth.spline(x,Fwx2[i,], df=df0)$y
+      
+      if(smoothT){
+        AstpFsm[i,] <- smooth.spline(Zastp[,1],AstpF[i,], df=df0)$y
+        MvpaFsm[i,] <- smooth.spline(Zmvpa[,1],MvpaF[i,], df=df0)$y
+        
+        AstpFxsm[i,] <- smooth.spline(Zastp[,1],AstpFx[i,], df=df0)$y
+        MvpaFxsm[i,] <- smooth.spline(Zmvpa[,1],MvpaFx[i,], df=df0)$y
+      }
+    }
+    id <- which(x > 0 & x < 1)
+    x <- x[id]
+    Fw <- Fw[,id]
+    FwSmth <- FwSmth[,id]
+    Fwx <- Fwx[,id]
+    FwSmthx <- FwSmthx[,id]
+    FwSmthx2 <- FwSmthx2[,id]
+    #FwSmth <- apply(Fw, 1, smooth.spline)
+    # fAstp <- tcrossprod(bs[,1], Dt0$Xs[,1]) + tcrossprod(PostMat[, grepl("^*s_1_1", colnames(PostMat))], Dt0$Zs_1_1)
+    # fMvpa <- tcrossprod(bs[,2], Dt0$Xs[,2]) + tcrossprod(PostMat[, grepl("^*s_2_1", colnames(PostMat))], Dt0$Zs_2_1)
+    # 
+    # list(Fw =Fw, fAstp = fAstp, fMvpa = fMvpa)
+    
+    # od1 <- order(Dt0$Xs[,1])
+    # od2 <- order(Dt0$Xs[,2])
+    if(smoothT){
+      #par(mfrow=c(2,2))
+      #conditional_smooths(fit,ask = F)
+      #plot(conditional_effects(fit,effects = c("MnASTP", "MnMVPA"))) 
+      dat1 <- as.matrix(cbind(t(apply(AstpFxsm, 2, quantile, probs=c(0.025,.975))), colMeans(AstpFxsm), colMeans(AstpFsm) ) )
+      p1 <- ggmatplot(x = Df$MnASTP, dat1 ,
+                      plot_type = "line", color = c("black","black","red","green"),linetype=1,xlab="ASTP",ylab="", main = paste(tau)) + geom_hline(yintercept = 0, colour="grey",size=2,linetype = 2) 
+      
+      
+      dat2 <- as.matrix(cbind(t(apply(MvpaFxsm, 2, quantile, probs=c(0.025,.975))), colMeans(MvpaFxsm), colMeans(MvpaFsm) ) )
+      p2 <- ggmatplot(x = px[[2]]$data$MnMVPA, dat2 ,
+                      plot_type = "line", color = c("black","black","red","green"),linetype=1,xlab="MVPA",ylab="", main = paste(tau)) + geom_hline(yintercept = 0, colour="grey",size=2,linetype = 2) 
+      
+      # p1 = plot(conditional_smooths(fit,"s(MnASTP, bs='ps', k=11)"), ask = F) #s(MnASTP, bs='ps', k=11)
+      # p2 = plot(conditional_smooths(fit,"s(MnMVPA, bs='ps', k=11)"), ask = F) # s(MnMVPA)
+      #p1 = plot(conditional_smooths(fit,"s(MnASTP)"), ask = F) #s(MnASTP, bs='ps', k=11)
+      #p2 = plot(conditional_smooths(fit,"s(MnMVPA)"), ask = F) # s(MnMVPA)
+      Reso <- cbind(t(apply(FwSmthx,2,quantile, probs=c(0.025, 0.975))), colMeans(FwSmthx), colMeans(FwSmth))
+      p3 <- ggmatplot(x, Reso ,
+                      plot_type = "line", color = c("black","black","red","green"),linetype=1,xlab="Time",ylab="", main = paste(tau)) + geom_hline(yintercept = 0, colour="grey",size=2,linetype = 2) 
+      
+      #print(p3)
+      #print(wrap_plots(p[[1]], p[[2]], p3))
+      pf3 =  (p1 | p2) / p3 
+      
+      
+      
+      
+    }else{
+      #par(mfrow=c(2,2))}
+      # matplot((Dt0$Xs[,1])[od1], (t(rbind(apply(fAstp,2,quantile, probs=c(0.025, 0.975)), colMeans(fAstp))))[od1,], type="l", lwd=3, xlab= "ASTP",ylab="")
+      # matplot((Dt0$Xs[,2])[od2], (t(rbind(apply(fMvpa,2,quantile, probs=c(0.025, 0.975)), colMeans(fMvpa))))[od2,], type="l", lwd=3, xlab= "MVPA",ylab="")
+      # matplot(x, t(rbind(apply(Fw,2,quantile, probs=c(0.025, 0.975)), colMeans(Fw))), type="l", lty=1,lwd=3, xlab= "Time",ylab="Gamma", main = paste(tau))
+      # abline(h=0,lwd=3,col="lightgrey",lty=2)
+      # matplot(x, t(rbind(apply(FwSmth,2,quantile, probs=c(0.025, 0.975)), colMeans(FwSmth))), type="l", lty=1, lwd=3, xlab= "Time",ylab="Gamma", main = paste(tau))
+      # abline(h=0,lwd=3,col="lightgrey",lty=2)
+      Reso <- cbind(t(rbind(apply(FwSmthx,2,quantile, probs=c(sig/2, 1 - sig/2)), colMeans(FwSmthx))), colMeans(FwSmth), colMeans(FwSmthx2))
+      #Reso <- cbind(t(rbind(apply(FwSmthx,2,quantile, probs=c(0.025, 0.975)), colMeans(FwSmthx))), colMeans(FwSmth), colMeans(FwSmthx2))
+      p3 <- ggmatplot(x*1439, Reso,
+                      plot_type = "line", color = c("black","black","red","green","coral"),linetype=c(1,1,5,3, 6), linewidth=2,xlab="Time",ylab="", main = paste(tau)) + geom_hline(yintercept = 0, colour="grey",size=2,linetype = 2) 
+      
+      p3.1 <- p3 + theme(axis.text = element_text(face="bold"),
+                         axis.text.x = element_text(size=12, face="bold", colour = "black"), 
+                         # axis.text.y = element_text(size=12,  colour = "black"), # unbold
+                         axis.title.x = element_text(size=14, face="bold", colour = "black"),
+                         axis.text.y = element_text(size=12, face="bold", colour = "black")) + scale_fill_discrete(name = " ", labels = c("", "2.5%-97.5%", "ME Correct.","Naive")) + scale_x_continuous(
+                           name = "Time",
+                           breaks = seq(0, 1439, by = 120),
+                           labels = timeHM_formatter, guide = guide_axis(angle = 45)) + labs(fill=' ') + theme(legend.position="none")
+      print(p3.1)
+    }
+  }
+  
+  
+  #---- Plot ehf function data
+  PostAnalyStan(fitCase2[[l]],  bs2, tau0, df0=10, smoothT = F)
   
   
   #-------------------------------------------------------------------------------
