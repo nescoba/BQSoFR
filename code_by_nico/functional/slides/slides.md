@@ -49,7 +49,7 @@ header-includes:
 ### Warning {#fragile .fragile}
 
 - Quantile regression should be able to handle this kind of heteroskedasticity 
-- Turns out you have to be careful:
+- I turns out you have to be careful:
     \begin{lstlisting}
     model1 <- brm(y ~ s(x), family = 'GAL')
     model2 <- brm(y ~ s(x), sigma ~ s(x), 
@@ -58,5 +58,9 @@ header-includes:
 
 ![With and Without $\sigma$](code_by_nico/functional/slides/wandwo.png){width=50%}
 
+## The real problem 
 
+- Consider the model 
+    \begin{equation*}
+    Y_i = \beta_0 + \mathbf{Z}_i^T \boldsym{\beta}_z + 
 
