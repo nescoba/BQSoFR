@@ -1,5 +1,5 @@
 ---
-title: BQR for Scalar-on-Function Regression with Heteroskedastic Data
+title: Scalar-on-Function Bayesian Quantile Regression with Heteroskedastic Data
 author: Nicolas Escobar 
 header-includes:
   - \usepackage{listings}
@@ -121,8 +121,8 @@ Simple setting: $P[Y_i \leq y] = F(y | X_i)$, scalars:
 - Denote 
   \begin{align*}
   \tilde{\mathbf{X}}_i &= (X_{i,1}, \ldots, X_{i, K})^T \\
-  \tilde \beta_{1,\tau, k} &= \int_I \mathbf{b}_k(t)^T \boldsymbol \beta_{1, \tau}(t) dt \\
-  \tilde{\boldsymbol\beta}_{1,\tau} &= (\tilde\beta_{1,\tau,1},\ldots, \tilde\beta_{1,\tau,K})^T
+  \tilde \beta_{1, k} &= \int_I \mathbf{b}_k(t)^T \boldsymbol \beta_{1}(t) dt \\
+  \tilde{\boldsymbol\beta}_{1} &= (\tilde\beta_{1,1},\ldots, \tilde\beta_{1,K})^T
   \end{align*} 
   Define $\tilde{\boldsymbol{\eta}}_1$ similarly
 
@@ -130,8 +130,8 @@ Simple setting: $P[Y_i \leq y] = F(y | X_i)$, scalars:
 
 - We try to estimate
   \begin{align*}
-  Q_\tau(Y_i|\mathbf{Z}_i, X_i ) &= \beta_{0} + \mathbf{Z}_i^T \boldsymbol{\beta}_{z} + \int_I \mathbf{X}_i(t)^T \boldsymbol{\beta}_{1}(t) dt \\
-  &\quad + \exp\left(\eta_0 + \mathbf{Z}_i^T \boldsymbol{\eta}_z + \int_I \mathbf{X}_i(t)^T \boldsymbol{\eta}_{1}(t) dt\right) q_\tau
+  Q_\tau(Y_i|\mathbf{Z}_i, X_i ) &= \beta_{0} + \mathbf{Z}_i^T \boldsymbol{\beta}_{z} + \tilde{\mathbf{X}}_i^T \tilde{\mathbf{\beta}}_{1} \\
+  &\quad + \exp\left(\eta_0 + \mathbf{Z}_i^T \boldsymbol{\eta}_z + \tilde{\mathbf{X}}_i^T \tilde{\mathbf{\eta}}_{1} \right) q_\tau
   \end{align*}
 
 - Model:
