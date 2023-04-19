@@ -382,7 +382,7 @@ rmixNormMul <- function(n, K, pik, p, mutild, sig2.1,sig2.2){
 # Put useful functions here
 #------------------------------------------------------------------------------ 
 #--- Case1  - n=100, n = 200; n = 500
-#case = "case3"
+case = "case3"
 {
   switch (case, 
           

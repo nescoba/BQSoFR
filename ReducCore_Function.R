@@ -20097,7 +20097,7 @@ CovMat <- function(m, Met,sig,rho){
 #---  Beta function
 Betafunc <- function(t, met){
   switch(met,
-         f1 = 1.*sin(2*pi*t) + 1.5,
+         f1 = 1.*sin(2*pi*t) + 1.5 ,
          f2 = 1/(1+exp(4*2*(t-.5))),
          f3 = 1.*sin(pi*(8*(t-.5))/2)/ (1 + (2*(8*(t-.5))^2)*(sign(8*(t-.5))+1)) + 1.5,
          f4 = sin(pi*(16*(t-.5))/2)/ (1 + (2*(16*(t-.5))^2)*(.5*sin(8*(t-.5))+1)),
@@ -20371,7 +20371,7 @@ DataSimHeter <- function(pn, n, t, a, j0 = 2, rhox, sig.x, rho.u, sig.u, rho.m, 
 # Z <- matrix(rnorm(n=n*(j0-1), sd = 1), ncol = c(j0-1)); Z <- scale(Z); 
 # Z <- cbind(Z, rbinom(n = n, prob=pi.g, size=1))
 
-DataSimReplicate <- function(pn, n, t, a, j0 = 2, rhox, sig.x, rho.u, sig.u, rho.m, sig.w, distFep=c("Rst", "Norm","MixNorm"), distFUe = c("Rmst","Mvnorm"), distFepWe=c("Rmst","Mvnorm"), CovMet =c("CS", "Ar1"), sig.e, idf=c(1:4), nrep, Wdist,Z){
+DataSimReplicate <- function(pn, n, t, a, j0 = 2, rhox, sig.x, rho.u, sig.u, rho.m, sig.w, distFep=c("Rst", "Norm","MixNorm"), distFUe = c("Rmst","Mvnorm"), distFepWe=c("Rmst","Mvnorm"), CovMet =c("CS", "Ar1"), sig.e, idf=c(1:4)[1], nrep,Wdist = "norm",Z){
   #@parms Wdist = "norm" or "count"  
   #Nbasis0 =  c(5, 6, 15, 15) # pn = [which(n == c(100, 200,500,1000))]
   #J = K = k  = pn = pn00 =  Nbasis0[which(c(100,200,500, 1000) == n)]
@@ -20441,37 +20441,41 @@ DataSimReplicate <- function(pn, n, t, a, j0 = 2, rhox, sig.x, rho.u, sig.u, rho
   pi.g <- .65
   Prob0 <- rbinom(n=n,size=1,prob = pi.g)
   
-  # Z <- matrix(rnorm(n=n*(j0-1), sd = 1), ncol = c(j0-1)); Z <- scale(Z); 
-  # Z <- cbind(Z, rbinom(n = n, prob=pi.g, size=1))
+   #Z <- matrix(rnorm(n=n*(j0-1), sd = 1), ncol = c(j0-1)); Z <- scale(Z); 
+   #Z <- cbind(Z, rbinom(n = n, prob=pi.g, size=1))
   #Z[,2] <- c(mapply(rnorm, n=1, mean = crossprod(t(X_t),Betafunc(a,met[idf]))/length(a))); Z <- scale(Z); 
   
   Betaz <- rnorm(n = j0+1); 
   Betaz <- c(-1.05, .57)*c(1, .35,.35)[idf] #c(0., -1.05, .57) # c(1.87, -1.05, .57)
   Betaz <- c(-1.65,  0.91, -0.84)  #rnorm(n = j0) + .2; #c(0., -1.05, .57) # c(1.87, -1.05, .57)
+  Z <- cbind(rbinom(n = n, prob=pi.g, size=1), matrix(rnorm(n=2*n), ncol = 2))
   Zmod <- Z #cbind(1, Z)
   Val =1 #<- caseN %in%paste("case",1:4,"a",sep="")
   #*(1-Val)
   if(distFep != "Gam"){
-  ei <- DistEps(n, distFep, sig.e)*c(1,1,.5, 1)[idf]*3
+  ei <- DistEps(n, distFep, sig.e)*c(1,1,.5, 1)[idf]*1 #*3
   BetatF <- (Betafunc(a,met[idf]) - mean(Betafunc(a,met[idf])))*c(1,2,2, 2)[idf]
   fx0 = crossprod(t(X_t),BetatF)/length(a)
   }else{ 
   ei <- DistEps(n, distFep, sig.e)*1
-  BetatF <- 1.5*(Betafunc(a,met[idf]) - mean(Betafunc(a,met[idf])))*c(1,2,2, 2)[idf]
+  BetatF <- 2.5*(Betafunc(a,met[idf]) - mean(Betafunc(a,met[idf])))*c(1,2,2, 2)[idf]
   fx0 = crossprod(t(X_t),BetatF)/length(a)
   }
   
-  Y <- c(Zmod%*%Betaz*Val) + c(fx0)  + (ei - mean(ei))*c(fx0)  #*(crossprod(t(X_t),Betafunc(a,met[idf]))/length(a)) #(ei-mean(ei))  
+  #---- Here we simulate Y with non-canstant variance (dependent on the functional covariate X(t))
+  
+  #Y <- 3*(.3*c(Zmod%*%Betaz*Val) + c(fx0)  + (ei - mean(ei))*c(fx0 + .3*c(Zmod%*%Betaz*Val)))  #*(crossprod(t(X_t),Betafunc(a,met[idf]))/length(a)) #(ei-mean(ei))  
+  Y <- c(Zmod%*%Betaz*Val) + c(fx0)  + ei*c(fx0 + c(Zmod%*%Betaz*Val))  #*(crossprod(t(X_t),Betafunc(a,met[idf]))/length(a)) #(ei-mean(ei))  
   # #d0*rnorm(n, sd = sig.e) + (1-d0)*(rgamma(n=n,shape=1,scale=1.5) - 1.5) # (n,1) Y matrix
   
   
   #f0 <- function(t) { X_t[1,]*Betafunc(t,met[idf])}
-  par(mfrow=c(2,2))
+  par(mfrow=c(3,2))
   MASS::truehist(Y)
   MASS::truehist(ei)
   MASS::truehist(c(Zmod%*%Betaz))
   MASS::truehist(fx0)
-  
+  MASS::truehist(ei*c(fx0 + c(Zmod%*%Betaz*Val)))
   #print(mean(Zmod%*%Betaz*Val + crossprod(t(X_t),Betafunc(a,met[idf]))/length(a))/sd((ei-mean(ei))))
   print(mean(Zmod%*%Betaz*Val + fx0)/sd((ei-mean(ei))))
   
@@ -20527,7 +20531,7 @@ DataSimReplicate <- function(pn, n, t, a, j0 = 2, rhox, sig.x, rho.u, sig.u, rho
     
   }
   
-  Data <- list(a = a, bs2 = bs2, Z = Z,  Y = Y, X = X_t, Xn = Xn, 
+  Data <- list(a = a, bs2 = bs2, Z = Z,  Y = Y, X = X_t, Xn = Xn, sige = sig.e,  
                Data=list(W = W_array, Wrep = Wrep, M= W_array[,,1], Mall = M_array, X = X_t), Delt = Delt, BetaZ = Betaz, Betat = BetatF)
   Data
 }
@@ -20708,6 +20712,31 @@ FSMI = function(model="gaussian", cov.model ="us", data){
 }
 
 
+
+func <- function(Pik, n=1, size=1){
+  which.max(rmultinom(n=1,size=1,prob = Pik))
+}
+funcCmp <- cmpfun(func)
+
+F2 <- function(Pik, n=1, size=1){
+  
+  apply(Pik,1,funcCmp)
+}
+F2Cmp <- cmpfun(F2)
+
+GamF <- function(gam, p0){
+  
+  (2*pnorm(-abs(gam))*exp(.5*gam^2) - p0)^2
+}
+
+#optimize(GamF,interval = c(-30,30), p0=1 - 0.05)
+GamBnd <- function(p0){
+  
+  Re1 <- optimize(GamF, interval = c(-30, 30), p0 = 1-p0)
+  Re2 <- optimize(GamF, interval = c(-30, 30), p0 = p0)
+  
+  c( -abs(Re1$minimum),  abs(Re2$minimum), Re1$objective,Re2$objective)  
+}
 
 
 #--- Find prior parameters for the inversge Gamma prior
