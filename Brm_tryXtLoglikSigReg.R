@@ -1319,9 +1319,6 @@ generated quantities {
 
  #------------------------------------------------------------------------------
 
-
-
-
   df2 <- df_sampleWt
   
   #form2 <- paste0("Y ~ ", paste(c("Gender","Race","HealthCondt2","AgeYR", colnames(df2)[grepl("W",colnames(df2))]), collapse = " + "))

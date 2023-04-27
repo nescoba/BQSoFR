@@ -624,6 +624,9 @@ for(l in 1:length(tauVal)){
   df2 <- df_sampleWt
   
   form2 <- paste0("Y ~ ", paste(c("Gender","Race","HealthCondt2","AgeYR", colnames(df2)[grepl("W",colnames(df2))]), collapse = " + "))
+  form2 = paste0("Y ~ X1 + X2 + s(X3) + ", paste(c(colnames(df_sampleWt)[grepl("W",colnames(df_sampleWt))]), collapse = " + ")) # formula for the response
+  form2  
+  
   Dt2 <- make_standata(bf(as.formula(form2), quantile = tau0), data = df2[c(1:nrow(df2)),], family = asym_laplace())
   
   Dt2$pn = pn
