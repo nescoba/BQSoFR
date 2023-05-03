@@ -1,0 +1,29 @@
+---
+title: "Research Ideas"
+format: html
+editor: visual
+bibliography: references.bib
+---
+
+## Quantile Regression for Censored data
+
+The goal is to build a model to estimate the quantile function in a case of censored data outcome where the covariates are prone to measurement error (functional covariates).
+
+-   We want to consider the case where the functional covariate is mixture of zero and positive part
+
+    [@Yazdani2021]
+
+    [@deyoreo2020; @rahman2019; @rahman2021; @hu]
+
+    [@riva-palacio2021]
+
+-   We want to consider the case where we don't have replicates but we have instrumental variables. We want to implement a zero inflated aware Bayesian FUI or regression calibration approach.
+
+    [Trick to fit multiple models very fast in Brms](https://www.andrewheiss.com/blog/2021/12/20/fully-bayesian-ate-iptw/)
+
+-   We want to consider the case where we estimate quantile jointly
+
+    [@aloqaili2022; @hooten2019; @Chen2019; @Luo2021]
+
+    [@hu2020]
+

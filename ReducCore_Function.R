@@ -20447,18 +20447,19 @@ DataSimReplicate <- function(pn, n, t, a, j0 = 2, rhox, sig.x, rho.u, sig.u, rho
   
   Betaz <- rnorm(n = j0+1); 
   Betaz <- c(-1.05, .57)*c(1, .35,.35)[idf] #c(0., -1.05, .57) # c(1.87, -1.05, .57)
-  Betaz <- c(-1.65,  0.91, -0.84)  #rnorm(n = j0) + .2; #c(0., -1.05, .57) # c(1.87, -1.05, .57)
+  Betaz <- c(-1.65,  0.91, -0.84)/2  #rnorm(n = j0) + .2; #c(0., -1.05, .57) # c(1.87, -1.05, .57)
   Z <- cbind(rbinom(n = n, prob=pi.g, size=1), matrix(rnorm(n=2*n), ncol = 2))
   Zmod <- Z #cbind(1, Z)
   Val =1 #<- caseN %in%paste("case",1:4,"a",sep="")
   #*(1-Val)
   if(distFep != "Gam"){
   ei <- DistEps(n, distFep, sig.e)*c(1,1,.5, 1)[idf]*1 #*3
-  BetatF <- (Betafunc(a,met[idf]) - mean(Betafunc(a,met[idf])))*c(1,2,2, 2)[idf]
+  #BetatF <- (Betafunc(a,met[idf]) - mean(Betafunc(a,met[idf])))*c(1,2,2, 2)[idf]
+  BetatF <- Betafunc(a, met[idf]) #- mean(Betafunc(a,met[idf])))*c(1,2,2, 2)[idf]
   fx0 = crossprod(t(X_t),BetatF)/length(a)
   }else{ 
   ei <- DistEps(n, distFep, sig.e)*1
-  BetatF <- 2.5*(Betafunc(a,met[idf]) - mean(Betafunc(a,met[idf])))*c(1,2,2, 2)[idf]
+  BetatF <- Betafunc(a, met[idf]) #- mean(Betafunc(a,met[idf])))*c(1,2,2, 2)[idf]
   fx0 = crossprod(t(X_t),BetatF)/length(a)
   }
   
